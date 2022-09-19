@@ -1,7 +1,6 @@
 import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
-import { FcGoogle } from 'react-icons/fc';
 import shareVideo from '../assets/share.mp4';
 import logo from '../assets/logowhite.png';
 import jwt_decode from "jwt-decode";
@@ -9,20 +8,23 @@ import jwt_decode from "jwt-decode";
 import { client } from '../client';
 
 const Login = () => {
-  // const navigate = useNavigate();
-  // const responseGoogle = (response) => {
-  //   localStorage.setItem('user', JSON.stringify(response.profileObj));
-  //   const { name, googleId, imageUrl } = response.profileObj;
-  //   const doc = {
-  //     _id: googleId,
-  //     _type: 'user',
-  //     userName: name,
-  //     image: imageUrl,
-  //   };
-  //   client.createIfNotExists(doc).then(() => {
-  //     navigate('/', { replace: true });
-  //   });
-  //   console.log(response);
+  const navigate = useNavigate();
+  const responseGoogle = (response) => {
+    var decoded = jwt_decode(response.credential)
+    localStorage.setItem('user', decoded );
+    const { name, sub, picture } = decoded;
+    const doc = {
+      _id: sub,
+      _type: 'user',
+      userName: name,
+      image: picture,
+    };
+    client.createIfNotExists(doc).then(() => {
+      navigate('/', { replace: true });
+    });
+    console.log(response);
+  }
+  
   // };
 
   return (
@@ -45,14 +47,13 @@ const Login = () => {
 
           <div className="shadow-2xl">
             <GoogleLogin
-              onSuccess={credentialResponse => {
-                console.log(credentialResponse.credential);
-                var decoded = jwt_decode(credentialResponse.credential);
-                console.log(decoded);
-              }}
-              onError={() => {
-                console.log('Login Failed');
-              }}
+              onSuccess={responseGoogle}
+              onFailure={responseGoogle}
+              // {credentialResponse => {
+              //   console.log(credentialResponse.credential);
+              //   var decoded = jwt_decode(credentialResponse.credential);
+              //   return decoded
+              // }}
             />;
           </div>
         </div>
